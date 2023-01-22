@@ -1,6 +1,5 @@
 ArrayList<Mass> masses;
 ArrayList<Spring> springs;
-ArrayList<Constraint> constraints;
 float constraintY;
 float damping = 0.98;
 PVector wind = new PVector(0.1, 0);
@@ -16,38 +15,91 @@ void setup() {
       Mass m = new Mass(x*50+25, y*50+25, 1);
       masses.add(m);
       if (x > 0) {
-        Spring s = new Spring(m, masses.get(masses.size()-2), 0.1);
-        springs.add(s);
+          Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + y*10), 0.1);
+          springs.add(s);
       }
       if (y > 0) {
-        Spring s = new Spring(m, masses.get(masses.size()-11), 0.1);
-        springs.add(s);
+          Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-1)*10), 0.1);
+          springs.add(s);
       }
     }
+  }
+  /*
+ // add structural springs
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            if (x > 0) {
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + y*10), 0.1);
+                springs.add(s);
+            }
+            if (y > 0) {
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-1)*10), 0.1);
+                springs.add(s);
+            }
+        }
+    }
+    */
     
-    for (int x = 0; x < 10; x++) {
+    // add shear springs
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            if(x<9 && y<9){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + 1 + (y+1)*10), 0.05);
+                springs.add(s);
+            }
+            if(x>0 && y<9){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + (y+1)*10), 0.05);
+                springs.add(s);
+            }
+            if(x<9 && y>0){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + 1 + (y-1)*10), 0.05);
+                springs.add(s);
+            }
+            if(x>0 && y>0){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + (y-1)*10), 0.05);
+                springs.add(s);
+            }
+        }
+    }
+
+    // add bend springs
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            if(x<8){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + 2 + y*10), 0.01);
+                springs.add(s);
+            }
+            if(x>1){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x - 2 + y*10), 0.01);
+                springs.add(s);
+            }
+        }
+    }
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            if(y<8){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y+2)*10), 0.01);
+                springs.add(s);
+            }
+            if(y>1){
+                Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-2)*10), 0.01);
+springs.add(s);
+}
+}
+}
+
+
+
+for (int x = 0; x < 10; x++) {
         masses.get(x).isConstrained = true;
     }
     
     constraintY = 25;
-    
-  }
-  /*
-  constraints = new ArrayList<Constraint>();
-   for (int x = 0; x < 10; x++) {
-      Constraint c = new Constraint(new PVector(x*50+25, 25), masses.get(x), 0);
-      constraints.add(c);
-  }
-  */
+
 }
 
 void draw() {
   background(255);
-  /*
-  for (Constraint c: constraints) {
-    c.applyConstraint();
-  }
-  */
   
   wind.x = map(noise(frameCount*0.01), 0, 1, -0.2, 0.2);
   wind.y = map(noise(1000+frameCount*0.01), 0, 1, -0.2, 0.2);
@@ -83,16 +135,6 @@ class Mass {
     acceleration.add(wind);
 }
 
-
-/*
-  void update() {
-    if(isConstrained) return;
-    velocity.add(acceleration);
-    position.add(velocity);
-    acceleration.mult(0);
-}
-*/
-
 void update() {
     acceleration.add(PVector.mult(velocity,-damping));
     velocity.add(acceleration);
@@ -103,10 +145,6 @@ void update() {
     }
     acceleration.mult(0);
 }
-
-
-
-
 
   void display() {
     stroke(0);
@@ -142,27 +180,4 @@ class Spring {
     stroke(0);
     line(m1.position.x, m1.position.y, m2.position.x, m2.position.y);
   }
-}
-
-class Constraint {
-    PVector position;
-    Mass mass;
-    float restLength;
-
-    Constraint(PVector position, Mass mass, float restLength) {
-        this.position = position;
-        this.mass = mass;
-        this.restLength = restLength;
-    }
-
-    void applyConstraint() {
-      PVector delta = PVector.sub(position, mass.position);
-      PVector tempPosition = PVector.add(mass.position,mass.velocity);
-      delta = PVector.sub(position, tempPosition);
-      float deltaLength = delta.mag();
-      float ratio = (deltaLength - restLength) / deltaLength;
-      mass.position = PVector.add(tempPosition,PVector.mult(delta,ratio));
-      mass.velocity = PVector.sub(mass.position,tempPosition);
-  }
-
 }
