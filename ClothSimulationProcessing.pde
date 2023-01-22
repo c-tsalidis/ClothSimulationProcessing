@@ -4,12 +4,17 @@ float constraintY = 100;
 float damping = 1;
 PVector wind = new PVector(0.1, 0);
 float gravity = 1;
+ArrayList<Collider> colliders;
+
 
 
 void setup() {
   size(800, 800);
   masses = new ArrayList<Mass>();
   springs = new ArrayList<Spring>();
+  
+  colliders = new ArrayList<Collider>();
+  colliders.add(new Collider(200, 200, 100, 100));
 
   for (int y = 0; y < 10; y++) {
     for (int x = 0; x < 10; x++) {
@@ -77,9 +82,37 @@ void draw() {
   wind.y = map(noise(10000 + frameCount*0.01), 0, 1, -0.2, 0.2);
   
   for (Mass m : masses) {
-    m.applyForce(new PVector(0, gravity*m.mass));
-    m.update();
-    m.display();
+    boolean colliding = false;
+    for(Collider c: colliders) {
+      
+      c.position.x = mouseX;
+      c.position.y = mouseY;
+      if (c.collidesWith(m)) {
+          colliding = true;
+          PVector collisionNormal = PVector.sub(m.position, c.position);
+          collisionNormal.normalize();
+          // m.position.sub(collisionNormal);
+          collisionNormal.mult(10);
+          m.applyForce(collisionNormal);
+          // print("Collided!");
+          
+          /*
+          PVector collisionNormal = PVector.sub(m.position, c.position);
+            collisionNormal.normalize();
+            collisionNormal.mult(2);
+            m.applyForce(collisionNormal);
+            */
+      }
+      c.display();
+    }
+    
+    // if(!colliding){
+        m.update();
+        m.applyForce(new PVector(0, gravity*m.mass));
+        m.update();
+        m.display();
+    // }
+    
   }
   for (Spring s : springs) {
     s.update();
@@ -151,5 +184,28 @@ class Spring {
   void display() {
     stroke(0);
     line(m1.position.x, m1.position.y, m2.position.x, m2.position.y);
+  }
+}
+
+
+class Collider {
+  PVector position;
+  float width, height;
+
+  Collider(float x, float y, float w, float h) {
+    position = new PVector(x, y);
+    width = w;
+    height = h;
+  }
+
+  boolean collidesWith(Mass m) {
+    return (m.position.x > position.x && m.position.x < position.x + width &&
+            m.position.y > position.y && m.position.y < position.y + height);
+  }
+  
+  void display() {
+    noStroke();
+    fill(255, 0, 0);
+    rect(position.x, position.y, width, height);
   }
 }
