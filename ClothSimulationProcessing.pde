@@ -1,8 +1,9 @@
 ArrayList<Mass> masses;
 ArrayList<Spring> springs;
-float constraintY;
+float constraintY = 100;
 float damping = 0.98;
 PVector wind = new PVector(0.1, 0);
+float gravity = 2;
 
 
 void setup() {
@@ -14,19 +15,10 @@ void setup() {
     for (int x = 0; x < 10; x++) {
       Mass m = new Mass(x*50+25, y*50+25, 1);
       masses.add(m);
-      if (x > 0) {
-          Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + y*10), 0.1);
-          springs.add(s);
-      }
-      if (y > 0) {
-          Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-1)*10), 0.1);
-          springs.add(s);
-      }
     }
   }
-  /*
- // add structural springs
-    for (int y = 0; y < 10; y++) {
+  
+  for (int y = 0; y < 10; y++) {
         for (int x = 0; x < 10; x++) {
             if (x > 0) {
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + y*10), 0.1);
@@ -36,13 +28,6 @@ void setup() {
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-1)*10), 0.1);
                 springs.add(s);
             }
-        }
-    }
-    */
-    
-    // add shear springs
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
             if(x<9 && y<9){
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x + 1 + (y+1)*10), 0.05);
                 springs.add(s);
@@ -59,12 +44,6 @@ void setup() {
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x - 1 + (y-1)*10), 0.05);
                 springs.add(s);
             }
-        }
-    }
-
-    // add bend springs
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
             if(x<8){
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x + 2 + y*10), 0.01);
                 springs.add(s);
@@ -73,28 +52,21 @@ void setup() {
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x - 2 + y*10), 0.01);
                 springs.add(s);
             }
-        }
-    }
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
             if(y<8){
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y+2)*10), 0.01);
                 springs.add(s);
             }
             if(y>1){
                 Spring s = new Spring(masses.get(x + y*10), masses.get(x + (y-2)*10), 0.01);
-springs.add(s);
-}
-}
-}
+                springs.add(s);
+            }
+        }
+    }
 
 
-
-for (int x = 0; x < 10; x++) {
+    for (int x = 0; x < 10; x++) {
         masses.get(x).isConstrained = true;
     }
-    
-    constraintY = 25;
 
 }
 
@@ -102,10 +74,10 @@ void draw() {
   background(255);
   
   wind.x = map(noise(frameCount*0.01), 0, 1, -0.2, 0.2);
-  wind.y = map(noise(1000+frameCount*0.01), 0, 1, -0.2, 0.2);
+  wind.y = map(noise(10000 + frameCount*0.01), 0, 1, -0.2, 0.2);
   
   for (Mass m : masses) {
-    m.applyForce(new PVector(0, 0.1*m.mass));
+    m.applyForce(new PVector(0, gravity*m.mass));
     m.update();
     m.display();
   }
