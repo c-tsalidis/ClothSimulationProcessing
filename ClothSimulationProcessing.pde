@@ -1,9 +1,9 @@
 ArrayList<Mass> masses;
 ArrayList<Spring> springs;
 float constraintY = 100;
-float damping = 0.98;
+float damping = 1;
 PVector wind = new PVector(0.1, 0);
-float gravity = 2;
+float gravity = 1;
 
 
 void setup() {
@@ -13,7 +13,7 @@ void setup() {
 
   for (int y = 0; y < 10; y++) {
     for (int x = 0; x < 10; x++) {
-      Mass m = new Mass(x*50+25, y*50+25, 1);
+      Mass m = new Mass(x*50+width / 4, y*50+25, 1);
       masses.add(m);
     }
   }
